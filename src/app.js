@@ -9,26 +9,87 @@ import commodityRoutes from './routes/commodity.routes.js';
 import listingRoutes from './routes/listing.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import locationRoutes from './routes/location.routes.js';
-import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
+
+import {
+  notFoundHandler,
+  errorHandler
+} from './middleware/errorHandler.js';
 
 dotenv.config();
 
 export const app = express();
 
-app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173', credentials: true }));
-app.use(express.json({ limit: '2mb' }));
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+// ================================
+// MIDDLEWARE
+// ================================
 
-app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.use(helmet());
+
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
+
+app.use(express.json({ limit: '2mb' }));
+
+app.use(morgan(
+  process.env.NODE_ENV === 'production' ? 'combined' : 'dev'
+));
+
+// ================================
+// ROOT ROUTE
+// ================================
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Udant API is running successfully 🚀'
+  });
+});
+
+// ================================
+// HEALTH CHECK
+// ================================
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'udant-api',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ================================
+// API ROUTES
+// ================================
 
 app.use('/auth', authRoutes);
+
 app.use('/commodities', commodityRoutes);
+
 app.use('/listings', listingRoutes);
+
 app.use('/profiles', profileRoutes);
+
 app.use('/locations', locationRoutes);
 
-// Phase 2+ routes to be added here: /rfqs, /offers, /orders, /shipments, /prices, /dashboard, /messages, /notifications
+// Future routes:
+// /rfqs
+// /offers
+// /orders
+// /shipments
+// /prices
+// /dashboard
+// /messages
+// /notifications
+
+// ================================
+// ERROR HANDLING
+// Keep these at the bottom
+// ================================
 
 app.use(notFoundHandler);
+
 app.use(errorHandler);
+
+export default app;
