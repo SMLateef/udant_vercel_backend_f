@@ -1,0 +1,29 @@
+export class ApiError extends Error {
+  constructor(statusCode, message, details) {
+    super(message);
+    this.statusCode = statusCode;
+    this.details = details;
+  }
+}
+
+export function notFoundHandler(req, res, next) {
+  next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
+}
+
+// eslint-disable-next-line no-unused-vars
+export function errorHandler(err, req, res, next) {
+  const statusCode = err.statusCode || 500;
+  const isServerError = statusCode >= 500;
+
+  if (isServerError) {
+    // Never leak internals to the client, but log full detail server-side.
+    console.error('[error]', err);
+  }
+
+  res.status(statusCode).json({
+    error: {
+      message: isServerError ? 'Internal server error' : err.message,
+      details: isServerError ? undefined : err.details,
+    },
+  });
+}
